@@ -11,7 +11,8 @@ def linear_metric(data:pd.Series) -> tuple:
     number of unique words, number of longwords, number of characters, number of syllables per word', 
     number of polysyllabic words, number of words, number of sentences, 'number of monosylabic words,
     entropy of the text, coleman liau score, automated readability score, flesch score, and gunning fog score.
-    It then combines these scores in a linear fashion'''
+    
+    It then combines these scores linearly to make the bunka score, storing them in the linear_df'''
     
     linear_df = pd.DataFrame({'input': data})
 
@@ -53,8 +54,3 @@ def linear_metric(data:pd.Series) -> tuple:
     linear_df.loc[:, 'linear_bunka_score'] = all_df.iloc[:, 1:].apply(zscore).sum(axis=1)
 
     return linear_df, all_df
-
-test_data = pd.read_csv('Accepted_Rejected_with_scores.csv')
-test_data = test_data['response']
-test_data = test_data[:5]
-x, y = linear_metric(test_data)
