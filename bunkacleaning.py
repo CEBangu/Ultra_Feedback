@@ -31,28 +31,28 @@ def data_switcher(badidxs: list, DataFrame):
     return DataFrame
 
 
-def lang_cull(data: pd.DataFrame, response_column: str, prompt_column: str) -> tuple:
+def lang_cull(DataFrame, response_column: str, prompt_column: str) -> tuple:
     
-    DetectorFactory.seed(0)
+    DetectorFactory.seed = 0
 
-    df = data.copy()
+    df = DataFrame.copy()
 
     non_english_prompts = []
     non_parasable_prompts = []
 
     for _, row in df.iterrows():
         try:
-            if detect(row['response']) != 'en':
-                non_english_prompts.append(row['prompt'])
+            if detect(row[response_column]) != 'en':
+                non_english_prompts.append(row[prompt_column])
         except:
-            non_parasable_prompts.append(row['prompt'])
+            non_parasable_prompts.append(row[prompt_column])
 
     unusable_prompts = non_english_prompts + non_parasable_prompts
-    clean_df = df.drop(data[data[prompt_column].isin(unusable_prompts)])
+    clean_df = df[~df[prompt_column].isin(unusable_prompts)]
 
     return clean_df, unusable_prompts
 
-def get_stats(data:pd.Series) -> pd.DataFrame: 
+def get_stats(data:pd.Series): 
     '''This function takes in a pandas series of text and returns a DataFrame of the series and each element's
     linear bunka score, as well as a DataFrame of the individual scores for each base metric
 
