@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from langdetect import detect, DetectorFactory
-from from textacy import text_stats, make_spacy_doc
+from textacy import text_stats, make_spacy_doc
 
 
 def bad_idx_finder(DataFrame):
