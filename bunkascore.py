@@ -44,7 +44,7 @@ def linear_metric(data:pd.Series) -> tuple:
 
             all_df.loc[index, 'automated_readability'] = text_stats.readability.automated_readability_index(response)
 
-            all_df.loc[index, 'flesch_score'] = text_stats.readability.flesch_reading_ease(response) 
+            all_df.loc[index, 'flesch_kincaid'] = text_stats.readability.flesch_kincaid_grade_level(response) 
 
             all_df.loc[index, 'gunning_fog'] = text_stats.readability.gunning_fog_index(response) 
         
