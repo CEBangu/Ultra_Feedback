@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from textacy import text_stats, make_spacy_doc
 from scipy.stats import zscore
+from sklearn.decomposition import PCA
 
 def linear_metric(data:pd.Series) -> tuple: 
     '''This funciton takes in a pandas series of text and returns a DataFrame of the series and each element's
@@ -54,3 +55,58 @@ def linear_metric(data:pd.Series) -> tuple:
     linear_df.loc[:, 'linear_bunka_score'] = all_df.iloc[:, 1:].apply(zscore).sum(axis=1)
 
     return linear_df, all_df
+
+
+def wpca_metric(data:pd.Series, computed:bool) -> tuple:
+    
+    if not computed:
+        wpca_df = pd.DataFrame({'input': data})
+
+        all_df = pd.DataFrame({'input': data})
+
+        for index, text in data.items():
+            try:
+                response = make_spacy_doc(text, lang='en_core_web_sm')
+
+                all_df.loc[index, 'n_uniquewords'] = text_stats.basics.n_unique_words(response)
+
+                all_df.loc[index, 'n_longwords'] = text_stats.basics.n_long_words(response)
+
+                all_df.loc[index, 'n_chars'] = text_stats.basics.n_chars(response)
+        
+                all_df.loc[index, 'n_sylsprword'] = text_stats.basics.n_syllables(response)
+
+                all_df.loc[index, 'n_polysylwords'] = text_stats.basics.n_polysyllable_words(response)
+
+                all_df.loc[index, 'n_words'] = text_stats.basics.n_words(response)
+
+                all_df.loc[index, 'n_sents'] = text_stats.basics.n_sents(response)
+
+                all_df.loc[index, 'n_monosylwords'] = text_stats.basics.n_monosyllable_words(response)
+
+                all_df.loc[index, 'entropy'] = text_stats.basics.entropy(response)
+        
+                all_df.loc[index, 'coleman_liau'] = text_stats.readability.coleman_liau_index(response) 
+
+                all_df.loc[index, 'automated_readability'] = text_stats.readability.automated_readability_index(response)
+
+                all_df.loc[index, 'flesch_kincaid'] = text_stats.readability.flesch_kincaid_grade_level(response) 
+
+                all_df.loc[index, 'gunning_fog'] = text_stats.readability.gunning_fog_index(response) 
+        
+            except ValueError:
+                print(f"SpaCy didn't like the input at index {index}. Try removing it and running again")
+    
+    relevant_z_scores = []
+    for column in all_df.columns[1:]:
+        all_df.loc[column + '_zscore'] = all_df.loc[:, column].apply(zscore)
+        relevant_z_scores.append(column + 'z_score')
+
+
+    pca_weighted = PCA()
+    pca_weighted_comps = pca_weighted.fit_transform(df_all[relevant_z_scores])
+    pca_weighted_exp_var_rat = pca_weighted.explained_variance_ratio_
+
+    wpca_df.loc[:, 'weighted_pca'] = pca_weighted_comps @ pca_weighted_exp_var_rat
+
+    return wpca_df, all_df
